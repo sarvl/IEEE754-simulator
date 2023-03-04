@@ -9,31 +9,6 @@
 #define PRINT_FLOAT_STD(x) std::cout << x << '\n';
 #define PRINT_FLOAT_BIT(x) { float r = x; std::cout << *reinterpret_cast<uint32_t*>(& r) << '\n'; }
 #define COMPARE_FLOAT(x, y) (*reinterpret_cast<float*>(&x) ==( y ))
-#define CHECK(x, y) \
-	res = x;\
-	if(COMPARE_FLOAT(res, ( y )))\
-		std::cout << " V";\
-	else\
-	{\
-		std::cout << " X\n";\
-		PRINT_FLOAT_OWN(res);\
-		PRINT_FLOAT_STD(y);\
-		std::cout << res << '\n';\
-		float t = y;\
-		PRINT_FLOAT_BIT(t);\
-		std::cout << '\n';\
-	}
-
-#define CHECK_INT(x, y) \
-	if((x) == (y))\
-		std::cout << " V";\
-	else\
-	{\
-		std::cout << " X\n";\
-		std::cout << (x) << '\n';\
-		std::cout << (y) << '\n';\
-		std::cout << '\n';\
-	}
 
 #define IF_A_B_BOTH(a, b, x, y, z)\
 	if(a)\
@@ -177,6 +152,35 @@ constexpr bool     is_Inf              (const uint32_t a);
 constexpr bool     is_NaN              (const uint32_t a);
 constexpr bool     is_sNaN             (const uint32_t a);
 
+
+void check(uint32_t x, float y)
+{
+	if(COMPARE_FLOAT(x, y))
+		std::cout << " V";
+	else
+	{
+		std::cout << " X\n";
+		PRINT_FLOAT_OWN(x);
+		PRINT_FLOAT_STD(y);
+		std::cout << x << '\n';
+		float t = y;
+		PRINT_FLOAT_BIT(t);
+		std::cout << '\n';
+	}
+}
+
+void check_Int(uint32_t x, uint32_t y)
+{
+	if((x) == (y))
+		std::cout << " V";
+	else
+	{
+		std::cout << " X\n";
+		std::cout << (x) << '\n';
+		std::cout << (y) << '\n';
+		std::cout << '\n';
+	}
+}
 
 
 
@@ -1052,8 +1056,6 @@ int main()
 
 	uint32_t valf = pack(conf);
 	uint32_t vals = pack(cons);
-	uint32_t res;
-
 #define GNRL 1
 #define LOG2 2
 #define ARIT 3
@@ -1065,103 +1067,103 @@ int main()
 #define OP NCFL 
 
 	std::cout << "c  ";
-	CHECK(valf, f);
-	CHECK(vals, s);
+	check(valf, f);
+	check(vals, s);
 
 #if OP == GNRL	
 	std::cout << "\nnp ";
-	CHECK(next_Up(valf), std::nextafter(f, INFINITY));
-	CHECK(next_Up(vals), std::nextafter(s, INFINITY));
+	check(next_Up(valf), std::nextafter(f, INFINITY));
+	check(next_Up(vals), std::nextafter(s, INFINITY));
 	
 	std::cout << "\nnd ";
-	CHECK(next_Down(valf), std::nextafter(f, -INFINITY));
-	CHECK(next_Down(vals), std::nextafter(s, -INFINITY));
+	check(next_Down(valf), std::nextafter(f, -INFINITY));
+	check(next_Down(vals), std::nextafter(s, -INFINITY));
 
 	std::cout << "\nmnv";
-	CHECK(min_Val(valf, vals), std::fmin(f, s));
-	CHECK(min_Val(vals, valf), std::fmin(s, f));
+	check(min_Val(valf, vals), std::fmin(f, s));
+	check(min_Val(vals, valf), std::fmin(s, f));
 	std::cout << "\nmxv";
-	CHECK(max_Val(valf, vals), std::fmax(f, s));
-	CHECK(max_Val(vals, valf), std::fmax(s, f));
+	check(max_Val(valf, vals), std::fmax(f, s));
+	check(max_Val(vals, valf), std::fmax(s, f));
 
 #elif OP == LOG2
 	std::cout << "\ns2 ";
-	CHECK(scl(valf, fl_To_Int(vals)), std::scalbn(f, static_cast<int>(s)));
-	CHECK(scl(vals, fl_To_Int(valf)), std::scalbn(s, static_cast<int>(f)));
+	check(scl(valf, fl_To_Int(vals)), std::scalbn(f, static_cast<int>(s)));
+	check(scl(vals, fl_To_Int(valf)), std::scalbn(s, static_cast<int>(f)));
 
 	std::cout << "\nl2 ";
-	CHECK_INT(log(valf), static_cast<int>(std::logb(f)));
-	CHECK_INT(log(vals), static_cast<int>(std::logb(s)));
+	check_Int(log(valf), static_cast<int>(std::logb(f)));
+	check_Int(log(vals), static_cast<int>(std::logb(s)));
 
 #elif OP == SIGN
 	std::cout << "\nneg";
-	CHECK(neg(valf), -f);
-	CHECK(neg(vals), -s);
+	check(neg(valf), -f);
+	check(neg(vals), -s);
 
 	std::cout << "\nabs";
-	CHECK(abs(valf), std::abs(f));
-	CHECK(abs(vals), std::abs(s));
+	check(abs(valf), std::abs(f));
+	check(abs(vals), std::abs(s));
 
 	std::cout << "\ncps";
-	CHECK(cps(valf, vals), std::copysign(f, s));
-	CHECK(cps(vals, valf), std::copysign(s, f));
+	check(cps(valf, vals), std::copysign(f, s));
+	check(cps(vals, valf), std::copysign(s, f));
 
 #elif OP == COMP
 
 	std::cout << "\nqeq";
-	CHECK_INT(qeq(valf, vals), f == s);
-	CHECK_INT(qeq(vals, valf), s == f);
+	check_Int(qeq(valf, vals), f == s);
+	check_Int(qeq(vals, valf), s == f);
 	
 	std::cout << "\nqne";
-	CHECK_INT(qne(valf, vals), f != s);
-	CHECK_INT(qne(vals, valf), s != f);
+	check_Int(qne(valf, vals), f != s);
+	check_Int(qne(vals, valf), s != f);
 	
 	std::cout << "\nqgr";
-	CHECK_INT(qgr(valf, vals), f >  s);
-	CHECK_INT(qgr(vals, valf), s >  f);
+	check_Int(qgr(valf, vals), f >  s);
+	check_Int(qgr(vals, valf), s >  f);
 	
 	std::cout << "\nqge";
-	CHECK_INT(qge(valf, vals), f >= s);
-	CHECK_INT(qge(vals, valf), s >= f);
+	check_Int(qge(valf, vals), f >= s);
+	check_Int(qge(vals, valf), s >= f);
 	
 	std::cout << "\nqls";
-	CHECK_INT(qls(valf, vals), f <  s);
-	CHECK_INT(qls(vals, valf), s <  f);
+	check_Int(qls(valf, vals), f <  s);
+	check_Int(qls(vals, valf), s <  f);
 	
 	std::cout << "\nqle";
-	CHECK_INT(qle(valf, vals), f <= s);
-	CHECK_INT(qle(vals, valf), s <= f);
+	check_Int(qle(valf, vals), f <= s);
+	check_Int(qle(vals, valf), s <= f);
 
 
 
 #elif OP == ARIT
 	std::cout << "\nmul";
-	CHECK(mul(valf, vals), f * s);
-	CHECK(mul(vals, valf), s * f);
+	check(mul(valf, vals), f * s);
+	check(mul(vals, valf), s * f);
 	
 	std::cout << "\ndiv";
-	CHECK(div(valf, vals), f / s);
-	CHECK(div(vals, valf), s / f);
+	check(div(valf, vals), f / s);
+	check(div(vals, valf), s / f);
 
 	std::cout << "\nadd";
-	CHECK(add(valf, vals), f + s);
-	CHECK(add(vals, valf), s + f);
+	check(add(valf, vals), f + s);
+	check(add(vals, valf), s + f);
 	
 	std::cout << "\nsub";
-	CHECK(sub(valf, vals), f - s);
-	CHECK(sub(vals, valf), s - f);
+	check(sub(valf, vals), f - s);
+	check(sub(vals, valf), s - f);
 	
 	std::cout << "\nsqt";
-	CHECK(sqt(valf), std::sqrt(f));
-	CHECK(sqt(vals), std::sqrt(s));
+	check(sqt(valf), std::sqrt(f));
+	check(sqt(vals), std::sqrt(s));
 	
 	std::cout << "\ntoi";
-	CHECK_INT(fl_To_Int(valf), static_cast<int32_t>(f));
-	CHECK_INT(fl_To_Int(vals), static_cast<int32_t>(s));
+	check_Int(fl_To_Int(valf), static_cast<int32_t>(f));
+	check_Int(fl_To_Int(vals), static_cast<int32_t>(s));
 	
 	std::cout << "\nfri";
-	CHECK(int_To_Fl(fl_To_Int(valf)), static_cast<float>(static_cast<int32_t>(f)));
-	CHECK(int_To_Fl(fl_To_Int(vals)), static_cast<float>(static_cast<int32_t>(s)));
+	check(int_To_Fl(fl_To_Int(valf)), static_cast<float>(static_cast<int32_t>(f)));
+	check(int_To_Fl(fl_To_Int(vals)), static_cast<float>(static_cast<int32_t>(s)));
 
 
 #elif OP == NCVR
@@ -1174,24 +1176,24 @@ int main()
 #elif OP == NCGN
 
 	std::cout << "\nneg";
-	CHECK_INT(is_Sign(valf), std::signbit(f));
-	CHECK_INT(is_Sign(vals), std::signbit(s));
+	check_Int(is_Sign(valf), std::signbit(f));
+	check_Int(is_Sign(vals), std::signbit(s));
 
 	std::cout << "\nnrm";
-	CHECK_INT(is_Nrm(valf), std::isnormal(f));
-	CHECK_INT(is_Nrm(vals), std::isnormal(s));
+	check_Int(is_Nrm(valf), std::isnormal(f));
+	check_Int(is_Nrm(vals), std::isnormal(s));
 	
 	std::cout << "\nsbn";
-	CHECK_INT(is_Sbn(valf), !std::isnormal(f));
-	CHECK_INT(is_Sbn(vals), !std::isnormal(s));
+	check_Int(is_Sbn(valf), !std::isnormal(f));
+	check_Int(is_Sbn(vals), !std::isnormal(s));
 
 	std::cout << "\ninf";
-	CHECK_INT(is_Inf(valf), std::isinf(f));
-	CHECK_INT(is_Inf(vals), std::isinf(s));
+	check_Int(is_Inf(valf), std::isinf(f));
+	check_Int(is_Inf(vals), std::isinf(s));
 
 	std::cout << "\nnan";
-	CHECK_INT(is_NaN(valf), std::isnan(f));
-	CHECK_INT(is_NaN(vals), std::isnan(s));
+	check_Int(is_NaN(valf), std::isnan(f));
+	check_Int(is_NaN(vals), std::isnan(s));
 #endif 
 
 	std::cout << "\n\n";
