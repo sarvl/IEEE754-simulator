@@ -168,7 +168,7 @@ constexpr bool     is_754_Version_2008 ();
 	section 5.7.2
 */
 constexpr cls      float_Class         (const uint32_t a);
-constexpr bool     is_Neg              (const uint32_t a);
+constexpr bool     is_Sign             (const uint32_t a);
 constexpr bool     is_Nrm              (const uint32_t a);
 constexpr bool     is_Fin              (const uint32_t a);
 constexpr bool     is_Zero             (const uint32_t a);
@@ -295,7 +295,7 @@ constexpr bool is_Zero(const uint32_t a)
 	return (a & 0x7FFFFFFF) == 0;
 }
 
-constexpr bool is_Neg(const uint32_t a)
+constexpr bool is_Sign(const uint32_t a)
 {
 	return (a & 0x80000000);
 }
@@ -317,7 +317,7 @@ constexpr uint32_t next_Up(const uint32_t a)
 	if(is_Zero(a))
 		return 0x1;
 
-	if(is_Neg(a))
+	if(is_Sign(a))
 		return a - 1;
 	else
 	{
@@ -566,9 +566,9 @@ constexpr uint32_t add(const uint32_t a, const uint32_t b)
 	if(is_NaN(b))
 		return b;
 
-	if(is_Neg(b))
+	if(is_Sign(b))
 		return sub(a, neg(b));
-	if(is_Neg(a))
+	if(is_Sign(a))
 		return sub(b, neg(a));
 
 	//they are positive
@@ -626,9 +626,9 @@ constexpr uint32_t sub(const uint32_t a, const uint32_t b)
 	if(is_NaN(b))
 		return b;
 
-	if(is_Neg(b))
+	if(is_Sign(b))
 		return add(a, neg(b));
-	if(is_Neg(a))
+	if(is_Sign(a))
 		return neg(add(neg(a), b));
 
 
@@ -883,7 +883,7 @@ constexpr bool is_Nrm(const uint32_t a)
 constexpr uint32_t sqt(const uint32_t a)
 {
 	if(is_Zero(a)) return a;
-	if(is_Neg(a)) return QNAN;
+	if(is_Sign(a)) return QNAN;
 	if(is_Inf(a)) return INF;
 	
 
@@ -925,26 +925,26 @@ constexpr cls float_Class(const uint32_t a)
 		return qnan;
 	if(is_Inf(a))
 	{
-		if(is_Neg(a))
+		if(is_Sign(a))
 			return ninf;
 		else
 			return pinf;
 	}
 	if(is_Zero(a))
 	{
-		if(is_Neg(a))
+		if(is_Sign(a))
 			return nzro;
 		else
 			return pzro;
 	}
 	if(is_Nrm(a))
 	{
-		if(is_Neg(a))
+		if(is_Sign(a))
 			return nnrm;
 		else
 			return pnrm;
 	}
-	if(is_Neg(a))
+	if(is_Sign(a))
 		return nsbn;
 	else
 		return psbn;
@@ -955,7 +955,7 @@ constexpr cls float_Class(const uint32_t a)
 	section 5.10 details of totalOrder predicate
 
 	i am not sure if i correctly understand what should happen when standard doesnt specify what should be the return value
-	eg is_NaN(a) && !is_NaN(b) && !is_Neg(a)
+	eg is_NaN(a) && !is_NaN(b) && !is_Sign(a)
 	i assume it should return true
 */
 constexpr bool total_Order(const uint32_t a, const uint32_t b)
@@ -967,7 +967,7 @@ constexpr bool total_Order(const uint32_t a, const uint32_t b)
 		if(is_NaN(b))
 		{
 			//i)
-			if(is_Neg(a))
+			if(is_Sign(a))
 				return true;
 
 			//ii)
@@ -982,7 +982,7 @@ constexpr bool total_Order(const uint32_t a, const uint32_t b)
 		else
 		{
 			//1)
-			if(is_Neg(a))
+			if(is_Sign(a))
 				return true;
 	
 			return false;
@@ -991,7 +991,7 @@ constexpr bool total_Order(const uint32_t a, const uint32_t b)
 	if(is_NaN(b))
 	{
 		//2)
-		if(is_Neg(b))
+		if(is_Sign(b))
 			return false;
 
 		return true;
@@ -1011,7 +1011,7 @@ constexpr bool total_Order(const uint32_t a, const uint32_t b)
 	//1) and 2)
 	//if(is_Zero(a) && is_Zero(b)) ; not needed since if qeq() == true but a != b then they must be zeros of different sign
 	{
-		if(is_Neg(a))
+		if(is_Sign(a))
 			return true;
 
 		return false;
@@ -1036,8 +1036,8 @@ int main()
 
 	n1.i = 0x80000000;
 	n2.i = 0x800FFFFF;
-	for(n1.i = 0x00000000; n1.i < 0x7F7FFFFF; n1.i += 0xFFFFF)
-	for(n2.i = 0x00000000; n2.i < 0x7F7FFFFF; n2.i += 0xFFFFF)
+//	for(n1.i = 0x00000000; n1.i < 0x7F7FFFFF; n1.i += 0xFFFFF)
+//	for(n2.i = 0x00000000; n2.i < 0x7F7FFFFF; n2.i += 0xFFFFF)
 //	for(n1.i = 0x80000000; n1.i < 0xFF7FFFFF; n1.i += 0xFFFFF)
 //	for(n2.i = 0x80000000; n2.i < 0xFF7FFFFF; n2.i += 0xFFFFF)
 {
@@ -1062,7 +1062,7 @@ int main()
 #define NCVR 6
 #define NCGN 7
 #define NCFL 8
-#define OP NCGN 
+#define OP NCFL 
 
 	std::cout << "c  ";
 	CHECK(valf, f);
@@ -1174,8 +1174,8 @@ int main()
 #elif OP == NCGN
 
 	std::cout << "\nneg";
-	CHECK_INT(is_Neg(valf), (f < 0));
-	CHECK_INT(is_Neg(vals), (s < 0));
+	CHECK_INT(is_Sign(valf), std::signbit(f));
+	CHECK_INT(is_Sign(vals), std::signbit(s));
 
 	std::cout << "\nnrm";
 	CHECK_INT(is_Nrm(valf), std::isnormal(f));
